@@ -25,8 +25,9 @@ import HttpHeaders._
 import HttpProtocols._
 import CharUtils._
 
-private[parsing] abstract class HttpMessagePartParser(val settings: ParserSettings,
-                                                      val headerParser: HttpHeaderParser) extends Parser {
+private[parsing] abstract class HttpMessagePartParser(
+    val settings: ParserSettings,
+    val headerParser: HttpHeaderParser) extends Parser {
   protected var protocol: HttpProtocol = `HTTP/1.1`
 
   def apply(input: ByteString): Result = parseMessageSafe(input)
@@ -77,7 +78,7 @@ private[parsing] abstract class HttpMessagePartParser(val settings: ParserSettin
     if (result != null) result
     else headerParser.resultHeader match {
       case HttpHeaderParser.EmptyHeader ⇒
-        val close = HttpMessage.connectionCloseExpected(protocol, ch)
+        val close = HttpMessage.connectionCloseExpected(protocol, ch) || settings.forceConnectionClose
         val next = parseEntity(headers.toList, input, lineEnd, clh, cth, teh, hh, close)
         if (e100) Result.Expect100Continue(() ⇒ next) else next
 
